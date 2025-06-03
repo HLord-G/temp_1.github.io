@@ -954,26 +954,44 @@ datacompiler.forEach((item, index) => {
 //   }
 // });
 
-// Sa main document
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("copy-btn")) {
     const index = e.target.dataset.index;
-    const iframe = document.querySelector(`iframe[data-index="${index}"]`);
     
-    // Send message sa iframe para makuha ang content
-    iframe.contentWindow.postMessage({action: 'getContent'}, '*');
+    // Copy ang raw code instead sa iframe content
+    const rawCode = datacompiler[index].code;
     
-    // Store ang button reference para sa response
-    window.currentCopyButton = e.target;
-  }
-});
-
-// Listen para sa response gikan sa iframe
-window.addEventListener('message', (event) => {
-  if (event.data.action === 'sendContent') {
-    navigator.clipboard.writeText(event.data.content).then(() => {
-      window.currentCopyButton.innerText = "Copied!";
-      setTimeout(() => window.currentCopyButton.innerText = "Copy", 1000);
+    navigator.clipboard.writeText(rawCode).then(() => {
+      e.target.innerText = "Copied!";
+      setTimeout(() => e.target.innerText = "Copy", 1000);
+    }).catch(err => {
+      console.error('Copy failed:', err);
+      // Fallback method
+      fallbackCopyTextToClipboard(rawCode, e.target);
     });
   }
 });
+
+// Fallback function para sa browsers nga dili support clipboard API
+function fallbackCopyTextToClipboard(text, button) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.left = "-999999px";
+  textArea.style.top = "-999999px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    button.innerText = "Copied!";
+    setTimeout(() => button.innerText = "Copy", 1000);
+  } catch (err) {
+    console.error('Fallback copy failed:', err);
+    button.innerText = "Copy Failed";
+    setTimeout(() => button.innerText = "Copy", 2000);
+  }
+  
+  document.body.removeChild(textArea);
+}
