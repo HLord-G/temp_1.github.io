@@ -912,44 +912,68 @@ datacompiler.forEach((item, index) => {
 });
 
 // Handle Copy & Theme Toggle
+// document.addEventListener("click", (e) => {
+//   if (e.target.classList.contains("copy-btn")) {
+//     const index = e.target.dataset.index;
+//     const iframe = document.querySelector(`iframe[data-index="${index}"]`);
+//     const parser = new DOMParser();
+//     const doc = parser.parseFromString(iframe.srcdoc, "text/html");
+//     const bodyContent = doc.body.innerHTML.trim();
+
+//     // Copy to clipboard
+//     navigator.clipboard.writeText(bodyContent).then(() => {
+//       e.target.innerText = "Copied!";
+//       setTimeout(() => e.target.innerText = "Copy", 1000);
+//     });
+//   }
+
+//   if (e.target.classList.contains("theme-toggle")) {
+//     const index = e.target.dataset.index;
+//     const iframe = document.querySelector(`iframe[data-index="${index}"]`);
+//     const currentDoc = new DOMParser().parseFromString(iframe.srcdoc, "text/html");
+//     let currentTheme = currentDoc.documentElement.getAttribute("data-theme");
+//     let newTheme = currentTheme === "dark" ? "light" : "dark";
+//     e.target.innerText = newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
+
+//     // Rebuild srcdoc with new theme
+//     const htmlContent = `
+//       <html data-theme="${newTheme}">
+//         <head>
+//           <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
+//           <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/>
+//           <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+//           <script defer src="https://www.flexboy.online/script/flexboy_script.js"></script>
+//           <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js"></script>
+//         </head>
+//         <body>
+//           ${datacompiler[index].code}
+//         </body>
+//       </html>
+//     `;
+//     iframe.srcdoc = htmlContent;
+//   }
+// });
+
+// Sa main document
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("copy-btn")) {
     const index = e.target.dataset.index;
     const iframe = document.querySelector(`iframe[data-index="${index}"]`);
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(iframe.srcdoc, "text/html");
-    const bodyContent = doc.body.innerHTML.trim();
-
-    // Copy to clipboard
-    navigator.clipboard.writeText(bodyContent).then(() => {
-      e.target.innerText = "Copied!";
-      setTimeout(() => e.target.innerText = "Copy", 1000);
-    });
+    
+    // Send message sa iframe para makuha ang content
+    iframe.contentWindow.postMessage({action: 'getContent'}, '*');
+    
+    // Store ang button reference para sa response
+    window.currentCopyButton = e.target;
   }
+});
 
-  if (e.target.classList.contains("theme-toggle")) {
-    const index = e.target.dataset.index;
-    const iframe = document.querySelector(`iframe[data-index="${index}"]`);
-    const currentDoc = new DOMParser().parseFromString(iframe.srcdoc, "text/html");
-    let currentTheme = currentDoc.documentElement.getAttribute("data-theme");
-    let newTheme = currentTheme === "dark" ? "light" : "dark";
-    e.target.innerText = newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
-
-    // Rebuild srcdoc with new theme
-    const htmlContent = `
-      <html data-theme="${newTheme}">
-        <head>
-          <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
-          <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <script defer src="https://www.flexboy.online/script/flexboy_script.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js"></script>
-        </head>
-        <body>
-          ${datacompiler[index].code}
-        </body>
-      </html>
-    `;
-    iframe.srcdoc = htmlContent;
+// Listen para sa response gikan sa iframe
+window.addEventListener('message', (event) => {
+  if (event.data.action === 'sendContent') {
+    navigator.clipboard.writeText(event.data.content).then(() => {
+      window.currentCopyButton.innerText = "Copied!";
+      setTimeout(() => window.currentCopyButton.innerText = "Copy", 1000);
+    });
   }
 });
