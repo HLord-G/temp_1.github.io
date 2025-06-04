@@ -912,86 +912,44 @@ datacompiler.forEach((item, index) => {
 });
 
 // Handle Copy & Theme Toggle
-// document.addEventListener("click", (e) => {
-//   if (e.target.classList.contains("copy-btn")) {
-//     const index = e.target.dataset.index;
-//     const iframe = document.querySelector(`iframe[data-index="${index}"]`);
-//     const parser = new DOMParser();
-//     const doc = parser.parseFromString(iframe.srcdoc, "text/html");
-//     const bodyContent = doc.body.innerHTML.trim();
-
-//     // Copy to clipboard
-//     navigator.clipboard.writeText(bodyContent).then(() => {
-//       e.target.innerText = "Copied!";
-//       setTimeout(() => e.target.innerText = "Copy", 1000);
-//     });
-//   }
-
-//   if (e.target.classList.contains("theme-toggle")) {
-//     const index = e.target.dataset.index;
-//     const iframe = document.querySelector(`iframe[data-index="${index}"]`);
-//     const currentDoc = new DOMParser().parseFromString(iframe.srcdoc, "text/html");
-//     let currentTheme = currentDoc.documentElement.getAttribute("data-theme");
-//     let newTheme = currentTheme === "dark" ? "light" : "dark";
-//     e.target.innerText = newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
-
-//     // Rebuild srcdoc with new theme
-//     const htmlContent = `
-//       <html data-theme="${newTheme}">
-//         <head>
-//           <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
-//           <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/>
-//           <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-//           <script defer src="https://www.flexboy.online/script/flexboy_script.js"></script>
-//           <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js"></script>
-//         </head>
-//         <body>
-//           ${datacompiler[index].code}
-//         </body>
-//       </html>
-//     `;
-//     iframe.srcdoc = htmlContent;
-//   }
-// });
-
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("copy-btn")) {
     const index = e.target.dataset.index;
-    
-    // Copy ang raw code instead sa iframe content
-    const rawCode = datacompiler[index].code;
-    
-    navigator.clipboard.writeText(rawCode).then(() => {
+    const iframe = document.querySelector(`iframe[data-index="${index}"]`);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(iframe.srcdoc, "text/html");
+    const bodyContent = doc.body.innerHTML.trim();
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(bodyContent).then(() => {
       e.target.innerText = "Copied!";
       setTimeout(() => e.target.innerText = "Copy", 1000);
-    }).catch(err => {
-      console.error('Copy failed:', err);
-      // Fallback method
-      fallbackCopyTextToClipboard(rawCode, e.target);
     });
   }
-});
 
-// Fallback function para sa browsers nga dili support clipboard API
-function fallbackCopyTextToClipboard(text, button) {
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.style.position = "fixed";
-  textArea.style.left = "-999999px";
-  textArea.style.top = "-999999px";
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-  
-  try {
-    document.execCommand('copy');
-    button.innerText = "Copied!";
-    setTimeout(() => button.innerText = "Copy", 1000);
-  } catch (err) {
-    console.error('Fallback copy failed:', err);
-    button.innerText = "Copy Failed";
-    setTimeout(() => button.innerText = "Copy", 2000);
+  if (e.target.classList.contains("theme-toggle")) {
+    const index = e.target.dataset.index;
+    const iframe = document.querySelector(`iframe[data-index="${index}"]`);
+    const currentDoc = new DOMParser().parseFromString(iframe.srcdoc, "text/html");
+    let currentTheme = currentDoc.documentElement.getAttribute("data-theme");
+    let newTheme = currentTheme === "dark" ? "light" : "dark";
+    e.target.innerText = newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
+
+    // Rebuild srcdoc with new theme
+    const htmlContent = `
+      <html data-theme="${newTheme}">
+        <head>
+          <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
+          <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/>
+          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+          <script defer src="https://www.flexboy.online/script/flexboy_script.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js"></script>
+        </head>
+        <body>
+          ${datacompiler[index].code}
+        </body>
+      </html>
+    `;
+    iframe.srcdoc = htmlContent;
   }
-  
-  document.body.removeChild(textArea);
-}
+});
